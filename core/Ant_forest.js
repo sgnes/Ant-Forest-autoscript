@@ -60,38 +60,59 @@ function Ant_forest(automator, unlock, config) {
    ***********************/
 
   // 同步获取 toast 内容
-  const _get_toast_sync = function(filter, object) {
+  const _get_toast_sync = function(filter, object)
+  {
     filter = (typeof filter == null) ? "" : filter;
     let messages = threads.disposable();
     let result;
     // 在新线程中开启监听
-    let thread = threads.start(function() {
+    let thread = threads.start(function() 
+    {
       let temp = [];
       let counter = 0;
       // 监控 toast
-      events.onToast(function(toast) {
-        if (toast.getPackageName().indexOf(filter) >= 0) temp.push(toast.getText());
-        if (counter == object.length) messages.setAndNotify(temp);
+      events.onToast(function(toast) 
+      {
+        if (toast.getPackageName().indexOf(filter) >= 0) 
+        {
+          
+          temp.push(toast.getText());
+          log("temp0 = " + temp);
+        }
+        if (counter == object.length) 
+        {
+          log("temp1 = " + temp);
+          messages.setAndNotify(temp);
+        }
+        log("counter = " + counter + "object.length=" + object.length);
       });
       // 触发 toast
-      object.forEach(function(obj) {
+      object.forEach(function(obj) 
+      {
+        log("click ball.");
+        counter++;
         _automator.clickCenter(obj);
         sleep(100);
-        counter++;
+        log("after click ball counter = " + counter);
       });
     });
     // 获取结果
+    log("get message data started")
     result = messages.blockedGet();
+    log("get message data done")
     thread.interrupt();
     return result;
   }
 
   // 获取自己的能量球中可收取倒计时的最小值
   const _get_min_countdown_own = function() {
-    if (className("Button").descMatches(/\s/).exists()) {
+    if (className("Button").descMatches(/\s/).exists()) 
+    {
+      log("get min countdown own button exist.")
       let energy_ball = className("Button").descMatches(/\s/).untilFind();
       // 如果存在能量球则通过 toast 记录收取倒计时
-      if (energy_ball.length) {
+      if (energy_ball.length) 
+      {
         let temp = [];
         let toasts = _get_toast_sync(_package_name, energy_ball);
         toasts.forEach(function(toast) {
@@ -100,6 +121,7 @@ function Ant_forest(automator, unlock, config) {
         });
         _min_countdown = Math.min.apply(null, temp);
         _timestamp = new Date();
+        log("_min_countdown" + _min_countdown);
       }
     } else {
       _min_countdown = null;
@@ -310,8 +332,11 @@ function Ant_forest(automator, unlock, config) {
     if (!textContains("蚂蚁森林").exists()) _start_app();
     descEndsWith("背包").waitFor();
     _get_pre_energy();
+    log("start collect own.")
     _collect();
+    log("collect own done.")
     _get_min_countdown_own();
+    log("_get_min_countdown_own done.")
     _fisrt_running = false;
   }
 
